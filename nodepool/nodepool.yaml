@@ -1,5 +1,5 @@
-script-dir: /etc/nodepool/scripts
-elements-dir: /etc/nodepool/elements
+script-dir: /etc/project-config/nodepool/scripts
+elements-dir: /etc/project-config/nodepool/elements
 images-dir: /opt/nodepool_dib
 
 cron:
