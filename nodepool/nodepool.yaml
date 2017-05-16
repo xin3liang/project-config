@@ -15,7 +15,7 @@ cron:
 #   root@jenkins:~# echo "0 $((RANDOM%23+1)) * * *"
 #   0 16 * * *
 # This references the hour of the day when images will be built.
-  image-update: '0 0 * * *'
+  image-update: '0 9 * * *'
 
 zmq-publishers:
   - tcp://localhost:8888
@@ -39,7 +39,7 @@ diskimages:
         - puppet
         - nodepool-base
         - cache-devstack
-      release: trusty
+      release: xenial
       env-vars:
         TMPDIR: /opt/dib_tmp
         DIB_IMAGE_CACHE: /opt/dib_cache
@@ -47,10 +47,10 @@ diskimages:
 providers:
   - name: local_01
 #TODO: Update the provider username, password, and authurl
-    username: '<%= provider_username %>'
-    password: '<%= provider_password %>'
-    auth-url: 'http://<openstack cloud>:5000/v2.0'
-    project-name: 'admin'
+    username: 'openstack-ci'
+    password: 'openstack-ci@linaro'
+    auth-url: 'http://192.168.1.89:5000/v2.0'
+    project-name: 'openstack-ci'
     max-servers: 2
     images:
       - name: dpc
