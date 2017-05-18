@@ -24,24 +24,27 @@ gearman-servers:
   - host: 127.0.0.1
 
 labels:
-  - name: d-p-c
-    image: dpc
+  - name: debian
+    image: debian
     min-ready: 1
     providers:
       - name: local_01
 
 diskimages:
-    - name: dpc
+    - name: debian
       elements:
-        - ubuntu-minimal
+        - debian-minimal
         - vm
         - openstack-repos
         - nodepool-base
         - cache-devstack
-      release: xenial
+      release: jessie
       env-vars:
         TMPDIR: /opt/dib_tmp
         DIB_IMAGE_CACHE: /opt/dib_cache
+        DIB_DISTRIBUTION_MIRROR: http://ftp.hk.debian.org/debian/
+        DIB_BOOTLOADER_DEFAULT_CMDLINE: "console=ttyAMA0"
+        DIB_DEBIAN_USE_DEBOOTSTRAP_CACHE: 1
 
 providers:
   - name: local_01
@@ -52,9 +55,9 @@ providers:
     project-name: 'openstack-ci'
     max-servers: 2
     images:
-      - name: dpc
+      - name: debian
         min-ram: 8192
-        diskimage: dpc
+        diskimage: debian
         username: jenkins
         private-key: '/home/nodepool/.ssh/id_rsa'
 
