@@ -24,27 +24,34 @@ gearman-servers:
   - host: 127.0.0.1
 
 labels:
-  - name: debian
-    image: debian
+  - name: debian-jessie
+    image: debian-jessie
     min-ready: 1
     providers:
       - name: local_01
 
 diskimages:
-    - name: debian
+    - name: debian-jessie
       elements:
         - debian-minimal
-        - vm
+        - simple-init
         - openstack-repos
         - nodepool-base
         - cache-devstack
+        - growroot
+        - infra-package-needs
+        - stackviz
       release: jessie
       env-vars:
         TMPDIR: /opt/dib_tmp
+        DIB_CHECKSUM: '1'
         DIB_IMAGE_CACHE: /opt/dib_cache
+        DIB_APT_LOCAL_CACHE: '0'
+        DIB_DISABLE_APT_CLEANUP: '1'
         DIB_DISTRIBUTION_MIRROR: http://ftp.hk.debian.org/debian/
+        DIB_GRUB_TIMEOUT: '0'
         DIB_BOOTLOADER_DEFAULT_CMDLINE: "console=ttyAMA0"
-        DIB_DEBIAN_USE_DEBOOTSTRAP_CACHE: 1
+        DIB_DEBIAN_USE_DEBOOTSTRAP_CACHE: '1'
 
 providers:
   - name: local_01
@@ -55,9 +62,9 @@ providers:
     project-name: 'openstack-ci'
     max-servers: 2
     images:
-      - name: debian
+      - name: debian-jessie
         min-ram: 8192
-        diskimage: debian
+        diskimage: debian-jessie
         username: jenkins
         private-key: '/home/nodepool/.ssh/id_rsa'
 
