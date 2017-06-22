@@ -34,13 +34,13 @@ diskimages:
     - name: debian-jessie
       elements:
         - debian-minimal
+        - vm
         - simple-init
         - openstack-repos
         - nodepool-base
         - cache-devstack
         - growroot
         - infra-package-needs
-        - stackviz
       release: jessie
       env-vars:
         TMPDIR: /opt/dib_tmp
@@ -48,10 +48,13 @@ diskimages:
         DIB_IMAGE_CACHE: /opt/dib_cache
         DIB_APT_LOCAL_CACHE: '0'
         DIB_DISABLE_APT_CLEANUP: '1'
-        DIB_DISTRIBUTION_MIRROR: http://ftp.hk.debian.org/debian/
+        DIB_DISTRIBUTION_MIRROR: http://repo.open-estuary.cloud:8083/debian/
         DIB_GRUB_TIMEOUT: '0'
         DIB_BOOTLOADER_DEFAULT_CMDLINE: "console=ttyAMA0"
         DIB_DEBIAN_USE_DEBOOTSTRAP_CACHE: '1'
+        DIB_DEBOOTSTRAP_CACHE: '1'
+        DIB_CUSTOM_PROJECTS_LIST_URL: file:///home/ubuntu/git/project-config/gerrit/linaro_CI_projects.yaml
+#        DIB_DEBUG_TRACE: '1'
 
 providers:
   - name: local_01
@@ -67,6 +70,8 @@ providers:
         diskimage: debian-jessie
         username: jenkins
         private-key: '/home/nodepool/.ssh/id_rsa'
+        meta:
+            hw_firmware_type: uefi
 
 targets:
   - name: jenkins1
