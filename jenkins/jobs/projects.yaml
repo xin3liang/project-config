@@ -1,8 +1,8 @@
 - project:
     name: sandbox
     github-org: openstack-dev
-    node: master
-    vendor: myvendor
+    node: debian-jessie
+    vendor: linaro
 
     jobs:
         - noop-check-communication

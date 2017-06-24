@@ -64,9 +64,15 @@ providers:
     auth-url: 'http://192.168.1.89:5000/v2.0'
     project-name: 'openstack-ci'
     max-servers: 2
+    boot-timeout: 120
+    api-timeout: 60
+    clean-floating-ips: true
+    networks:
+      - net-label: ci-net
     images:
       - name: debian-jessie
-        min-ram: 8192
+        min-ram: 2048
+#        name-filter: small
         diskimage: debian-jessie
         username: jenkins
         private-key: '/home/nodepool/.ssh/id_rsa'
