@@ -43,3 +43,6 @@ EOF
 
 # cleanup everything to the right owner
 chown -R jenkins:jenkins /home/jenkins
+
+# Install jdk
+apt install -y openjdk-8-jdk
