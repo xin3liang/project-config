@@ -26,7 +26,7 @@
     builders:
       - net-info
 #      - devstack-checkout
-      - devstack-checkout-http
+#      - devstack-checkout-http
       - shell: |
           #!/bin/bash -xe
           if [ -z $ZUUL_PROJECT ]; then
