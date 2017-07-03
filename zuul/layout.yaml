@@ -5,30 +5,67 @@ includes:
 pipelines:
   - name: check
     description: Newly uploaded patchsets enter this pipeline to receive an initial +/-1 Verified vote from Jenkins.
-    failure-message: "Build failed.  To recheck use 'myvendor: recheck'.  For 3rd party ci contact info: https://wiki.openstack.org/wiki/ThirdPartySystems"
+#    failure-message: "Build failed.  To recheck use 'myvendor: recheck'.  For 3rd party ci contact info: https://wiki.openstack.org/wiki/ThirdPartySystems"
     manager: IndependentPipelineManager
+    source: gerrit
+    precedence: normal
+    require:
+      open: True
+      current-patchset: True
     trigger:
       gerrit:
         - event: patchset-created
         - event: change-restored
-        # TODO: Change "myvendor" below to your vendor's name to add a custom
-        # recheck trigger that runs the check pipeline jobs when someone
-        # adds a comment to a review that says "myvendor: recheck".
         - event: comment-added
           comment: (?i)^(Patch Set [0-9]+:)?( [\w\\+-]*)*(\n\n)?\s*Linaro CI:\s*recheck\s*$
+ #   success:
+ #     gerrit:
+ #       verified: 1
+ #   failure:
+ #     gerrit:
+ #       verified: -1
+ #   merge-failure:
+ #     smtp:
+ #       #TODO: Update these to real e-mail addresses
+ #       to: xinliang.liu@linaro.org
+ #       from: zuul@example.com
+ #       subject: Upstream change {change} has a merge failure
+
+  - name: gate
+    description: Changes that have been approved by core developers are enqueued in order in this pipeline, and if they pass tests, will be merged.
+    success-message: Build succeeded (gate pipeline).
+    failure-message: Build failed (gate pipeline).  For information on how to proceed, see http://docs.openstack.org/infra/manual/developers.html#automated-testing
+    manager: DependentPipelineManager
+    source: gerrit
+    precedence: high
+    require:
+      open: True
+      current-patchset: True
+      approval:
+        - verified: [1, 2]
+          username: jenkins
+        - workflow: 1
+    trigger:
+      gerrit:
+        - event: comment-added
+          approval:
+            - workflow: 1
+        - event: comment-added
+          approval:
+            - verified: 1
+          username: jenkins
+    start:
+      gerrit:
+        verified: 0
     success:
       gerrit:
-        verified: 1
+        verified: 2
+        submit: true
     failure:
       gerrit:
-        verified: -1
-    merge-failure:
-      smtp:
-        #TODO: Update these to real e-mail addresses
-        to: xinliang.liu@linaro.org
-        from: zuul@example.com
-        subject: Upstream change {change} has a merge failure
-
+        verified: -2
+    window-floor: 20
+    window-increase-factor: 2
 
   - name: silent
     description: Newly uploaded patchsets enter this pipeline to check jobs whose results are NOT to be posted (because e.g. they are not yet stable)
@@ -52,28 +89,111 @@ pipelines:
         from: linaro-thirdparty-ci@example.com
         subject: 'Silent check of {change.project} {change.number},{change.patchset} failed'
 
-#  - name: periodic
-#    source: gerrit
-#    manager: IndependentPipelineManager
-#    trigger:
-#      timer:
-#        - time: '*/5 * * * *'
-#    success:
-#      smtp:
-#        #TODO: Update these to real e-mail addresses
-#        to: xinliang.liu@linaro.org
-#        from: zuul@example.com
-#        subject: 'Periodic check of {change.project} {change.number},{change.patchset} passed'
-#    failure:
-#      smtp:
-#        #TODO: Update these to real e-mail addresses
-#        to: xinliang.liu@linaro.org
-#        from: zuul@example.com
-#        subject: 'Periodic check of {change.project} {change.number},{change.patchset} failed'
+  - name: experimental
+    description: On-demand pipeline for requesting a run against a set of jobs that are not yet gating. Leave review comment of "check experimental" to run jobs in this pipeline.
+    success-message: Build succeeded (experimental pipeline).
+    failure-message: Build failed (experimental pipeline).
+    manager: IndependentPipelineManager
+    source: gerrit
+    precedence: normal
+    trigger:
+      gerrit:
+        - event: comment-added
+          comment: (?i)^(Patch Set [0-9]+:)?( [\w\\+-]*)*(\n\n)?\s*check experimental\s*$
+    success:
+      gerrit: {}
+    failure:
+      gerrit: {}
+
+  - name: periodic
+    description: Jobs in this queue are triggered on a timer.
+    manager: IndependentPipelineManager
+    source: gerrit
+    precedence: low
+    trigger:
+      timer:
+        - time: '0 6 * * *'
+
+  - name: post
+    description: This pipeline runs jobs that operate after each change is merged.
+    manager: IndependentPipelineManager
+    source: gerrit
+    precedence: low
+    trigger:
+      gerrit:
+        - event: ref-updated
+          ref: ^(?!refs/).*$
+
+  - name: merge-check
+    description: >
+      Each time a change merges, this pipeline verifies that all open changes
+      on the same project are still mergeable.
+    failure-message: Build failed (merge-check pipeline).
+    manager: IndependentPipelineManager
+    ignore-dependencies: true
+    source: gerrit
+    precedence: low
+    require:
+      approval:
+        - verified: [1, 2]
+          username: jenkins
+    trigger:
+      zuul:
+        - event: project-change-merged
+    merge-failure:
+      gerrit:
+        verified: -1
+
+
+
+project-templates:
+  - name: merge-check
+    merge-check:
+      - noop
+
+  - name: python-jobs
+    check:
+      - 'gate-{name}-docs-ubuntu-xenial'
+      - 'gate-{name}-pep8-ubuntu-xenial'
+      - 'gate-{name}-python27-ubuntu-xenial'
+
+  - name: python34-jobs
+    check:
+      - 'gate-{name}-python34'
+
+  - name: python35-jobs
+    check:
+      - 'gate-{name}-python35'
+
+  - name: check-requirements
+    check:
+      - 'gate-{name}-requirements'
+
 
 jobs:
   - name: ^dsvm-tempest.*$
     parameter-function: single_use_node
+
+  # Skip non-doc jobs for doc-only kolla changes.
+  - name: ^gate-kolla.*(?<!docs-ubuntu-(trusty|xenial))$
+    skip-if:
+      - project: ^openstack/kolla.*$
+        all-files-match-any:
+          - ^.*\.rst$
+          - ^doc/.*
+          - ^deploy-guide/source/.*
+
+  - name: ^kolla-dsvm-build.*$
+    branch: ^(?!stable/(mitaka|newton)).*$
+
+  - name: ^kolla-coverage-ubuntu-xenial-nv$
+    branch: ^(?!stable/(mitaka|newton)).*$
+    skip-if:
+      - project: ^openstack/kolla$
+        all-files-match-any:
+          - ^.*\.rst$
+          - ^doc/.*$
+
 
 projects:
   - name: openstack-dev/ci-sandbox
@@ -88,3 +208,71 @@ projects:
       - noop-check-communication
 #    periodic:
 #      - noop-check-communication
+
+  - name: openstack/kolla
+    template:
+      - name: merge-check
+      - name: python-jobs
+      - name: python34-jobs
+      - name: python35-jobs
+      - name: check-requirements
+#      - name: openstack-server-publish-jobs
+#      - name: publish-to-pypi
+#      - name: release-notes-jobs
+    check:
+      - gate-kolla-dsvm-build-ubuntu-binary-ubuntu-xenial-nv
+#      - gate-kolla-dsvm-build-ubuntu-source-ubuntu-xenial
+#      - gate-kolla-dsvm-deploy-ubuntu-binary-ubuntu-xenial-nv
+#      - gate-kolla-dsvm-deploy-ubuntu-source-ubuntu-xenial-nv
+#      - kolla-coverage-ubuntu-xenial-nv
+#    gate:
+#      - gate-kolla-dsvm-build-ubuntu-source-ubuntu-xenial
+#    experimental:
+#      - publish-kolla-dsvm-build-ubuntu-source-ubuntu-xenial:
+#        - publish-kolla-dsvm-ansible-deploy-multinode-ubuntu-source-ubuntu-xenial-2-node:
+#          - publish-kolla-dsvm-kubernetes-deploy-multinode-ubuntu-source-ubuntu-xenial-2-node:
+#            - publish-kolla-dsvm-save-ubuntu-source-ubuntu-xenial
+#    post:
+#      - kolla-dsvm-build-ubuntu-binary-ubuntu-xenial
+#      - kolla-dsvm-build-ubuntu-source-ubuntu-xenial
+#
+#  - name: openstack/kolla-ansible
+#    template:
+#      - name: merge-check
+##      - name: python-jobs
+##      - name: python35-jobs
+##      - name: check-requirements
+##      - name: openstack-server-publish-jobs
+##      - name: publish-to-pypi
+##      - name: release-notes-jobs
+##      - name: deploy-guide-jobs
+#    check:
+#      - gate-kolla-ansible-dsvm-deploy-ubuntu-binary-ubuntu-xenial-nv
+#      - gate-kolla-ansible-dsvm-deploy-ubuntu-source-ubuntu-xenial-nv
+#      - gate-kolla-ansible-dsvm-deploy-multinode-ubuntu-source-ubuntu-xenial-2-node-nv
+#      - gate-kolla-ansible-dsvm-deploy-multinode-ubuntu-binary-ubuntu-xenial-2-node-nv
+#      - gate-kolla-ansible-dsvm-deploy-ceph-ubuntu-source-ubuntu-xenial-2-node-nv
+#      - gate-kolla-ansible-dsvm-deploy-ceph-ubuntu-binary-ubuntu-xenial-2-node-nv
+#
+#  - name: openstack/kolla-kubernetes
+#    template:
+#      - name: merge-check
+##      - name: python-jobs
+##      - name: python34-jobs
+##      - name: python35-jobs
+##      - name: check-requirements
+##      - name: openstack-server-publish-jobs
+##      - name: publish-to-pypi
+##      - name: release-notes-jobs
+#    check:
+#      - gate-kolla-kubernetes-deploy-ubuntu-binary-2-iscsi-nv
+#      - gate-kolla-kubernetes-deploy-ubuntu-binary-2-ceph-nv
+#    experimental:
+#      - gate-kolla-kubernetes-deploy-ubuntu-source-4-ironic-nv
+#    periodic:
+#      - periodic-kolla-kubernetes-deploy-ubuntu-binary-2-ceph
+#      - periodic-kolla-kubernetes-deploy-ubuntu-binary-3-ceph
+#      - periodic-kolla-kubernetes-deploy-ubuntu-binary-4-ceph
+#      - periodic-kolla-kubernetes-deploy-ubuntu-binary-2-iscsi
+#      - periodic-kolla-kubernetes-deploy-ubuntu-binary-3-iscsi
+#      - periodic-kolla-kubernetes-deploy-ubuntu-binary-4-iscsi
