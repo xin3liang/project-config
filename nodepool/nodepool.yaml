@@ -54,12 +54,12 @@ diskimages:
       DIB_IMAGE_CACHE: /opt/dib_cache
       DIB_APT_LOCAL_CACHE: '0'
       DIB_DISABLE_APT_CLEANUP: '1'
-      DIB_DISTRIBUTION_MIRROR: http://repo.open-estuary.cloud:8083/debian/
+      DIB_DISTRIBUTION_MIRROR: http://192.168.1.107:8083/debian/
       DIB_GRUB_TIMEOUT: '0'
       DIB_BOOTLOADER_DEFAULT_CMDLINE: "console=ttyAMA0"
       DIB_DEBIAN_USE_DEBOOTSTRAP_CACHE: '1'
       DIB_DEBOOTSTRAP_CACHE: '1'
-      DIB_CUSTOM_PROJECTS_LIST_URL: file:///home/ubuntu/git/project-config/gerrit/linaro_CI_projects.yaml
+      DIB_CUSTOM_PROJECTS_LIST_URL: file:///home/ubuntu/git/project-config/gerrit/projects.yaml
 #        DIB_DEBUG_TRACE: '1'
   - name: ubuntu-xenial
     elements:
@@ -81,8 +81,9 @@ diskimages:
       DIB_DISABLE_APT_CLEANUP: '1'
       DIB_GRUB_TIMEOUT: '0'
       DIB_DEBIAN_COMPONENTS: 'main,universe'
+      DIB_DISTRIBUTION_MIRROR: http://192.168.1.107:8083/ubuntu-ports/
       DIB_BOOTLOADER_DEFAULT_CMDLINE: "console=ttyAMA0"
-      DIB_CUSTOM_PROJECTS_LIST_URL: file:///home/ubuntu/git/project-config/gerrit/linaro_CI_projects.yaml
+      DIB_CUSTOM_PROJECTS_LIST_URL: file:///home/ubuntu/git/project-config/gerrit/projects.yaml
       DIB_DEBIAN_USE_DEBOOTSTRAP_CACHE: '1'
       DIB_DEBOOTSTRAP_CACHE: '1'
 #        DIB_DEBUG_TRACE: '1'
