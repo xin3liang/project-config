@@ -576,7 +576,7 @@
 - job-group:
     name: python-jobs
     node:
-      - ubuntu-trusty
+#      - ubuntu-trusty
       - ubuntu-xenial
     jobs:
       - 'gate-{name}-pep8-{node}'
@@ -610,7 +610,7 @@
 - job-group:
     name: coverage-jobs
     node:
-      - ubuntu-trusty
+#      - ubuntu-trusty
       - ubuntu-xenial
     suffix:
       - ''

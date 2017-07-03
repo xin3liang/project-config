@@ -61,82 +61,83 @@
             - source
           suffix: ''
 
-- project:
-    name: kolla-ansible
+#- project:
+#    name: kolla-ansible
+#
+#    jobs:
+#      - python-jobs
+##      - pypi-jobs
+##      - openstack-publish-jobs
+##      - openstack-releasenotes-jobs
+##      - deploy-guide-jobs:
+##          service: kolla-ansible
+#      - '{pipeline}-kolla-ansible-dsvm-{action}-{distro}-{type}-{node}{suffix}':
+#          action: deploy
+#          distro: ubuntu
+#          node: ubuntu-xenial
+#          pipeline: gate
+#          type:
+#            - binary
+#            - source
+#          suffix: "-nv"
+#      - '{pipeline}-kolla-ansible-dsvm-{action}-{distro}-{type}-{node}{suffix}':
+#          action: deploy-multinode
+#          distro: ubuntu
+#          node: ubuntu-xenial-2-node
+#          pipeline: gate
+#          type:
+#            - binary
+#            - source
+#          suffix: "-nv"
+#      - '{pipeline}-kolla-ansible-dsvm-{action}-{distro}-{type}-{node}{suffix}':
+#          action: deploy-ceph
+#          distro: ubuntu
+#          node: ubuntu-xenial-2-node
+#          pipeline: gate
+#          type:
+#            - binary
+#            - source
+#          suffix: "-nv"
+#
+#- project:
+#    name: kolla-kubernetes
+#
+#    jobs:
+#      - python-jobs
+##      - pypi-jobs
+##      - openstack-publish-jobs
+##      - openstack-releasenotes-jobs
+#      - 'gate-kolla-kubernetes-{action}-{distro}-{type}-{ver}-{config}{suffix}':
+#          action: deploy
+#          config: ironic
+#          distro: ubuntu
+#          node: ubuntu-xenial
+#          type: source
+#          ver: '4'
+#          suffix: '-nv'
+#      - 'gate-kolla-kubernetes-{action}-{distro}-{type}-{ver}-{config}{suffix}':
+#          action: deploy
+#          config:
+#            - ceph
+#            - iscsi
+#          distro: ubuntu
+#          node: ubuntu-xenial
+#          type: binary
+#          ver: '2'
+#          suffix: '-nv'
+#      - 'periodic-kolla-kubernetes-{action}-{distro}-{type}-{ver}-{config}':
+#          action: deploy
+#          config:
+#            - ceph
+#            - iscsi
+#          distro: ubuntu
+#          node: ubuntu-xenial
+#          type: binary
+#          ver:
+#            - '2'
+#            - '3'
+#            - '4'
 
-    jobs:
-      - python-jobs
-#      - pypi-jobs
-#      - openstack-publish-jobs
-#      - openstack-releasenotes-jobs
-#      - deploy-guide-jobs:
-#          service: kolla-ansible
-      - '{pipeline}-kolla-ansible-dsvm-{action}-{distro}-{type}-{node}{suffix}':
-          action: deploy
-          distro: ubuntu
-          node: ubuntu-xenial
-          pipeline: gate
-          type:
-            - binary
-            - source
-          suffix: "-nv"
-      - '{pipeline}-kolla-ansible-dsvm-{action}-{distro}-{type}-{node}{suffix}':
-          action: deploy-multinode
-          distro: ubuntu
-          node: ubuntu-xenial-2-node
-          pipeline: gate
-          type:
-            - binary
-            - source
-          suffix: "-nv"
-      - '{pipeline}-kolla-ansible-dsvm-{action}-{distro}-{type}-{node}{suffix}':
-          action: deploy-ceph
-          distro: ubuntu
-          node: ubuntu-xenial-2-node
-          pipeline: gate
-          type:
-            - binary
-            - source
-          suffix: "-nv"
-
-- project:
-    name: kolla-kubernetes
-
-    jobs:
-      - python-jobs
-#      - pypi-jobs
-#      - openstack-publish-jobs
-#      - openstack-releasenotes-jobs
-      - 'gate-kolla-kubernetes-{action}-{distro}-{type}-{ver}-{config}{suffix}':
-          action: deploy
-          config: ironic
-          distro: ubuntu
-          node: ubuntu-xenial
-          type: source
-          ver: '4'
-          suffix: '-nv'
-      - 'gate-kolla-kubernetes-{action}-{distro}-{type}-{ver}-{config}{suffix}':
-          action: deploy
-          config:
-            - ceph
-            - iscsi
-          distro: ubuntu
-          node: ubuntu-xenial
-          type: binary
-          ver: '2'
-          suffix: '-nv'
-      - 'periodic-kolla-kubernetes-{action}-{distro}-{type}-{ver}-{config}':
-          action: deploy
-          config:
-            - ceph
-            - iscsi
-          distro: ubuntu
-          node: ubuntu-xenial
-          type: binary
-          ver:
-            - '2'
-            - '3'
-            - '4'
 - project:
     name: sandbox
     github-org: openstack-dev
