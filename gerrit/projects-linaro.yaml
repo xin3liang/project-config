@@ -1,0 +1,23 @@
+- project: openstack-dev/ci-sandbox
+  description: Sandbox for 3rd party CI systems
+  use-storyboard: true
+- project: openstack-infra/devstack-gate
+  description: Run DevStack in the gate
+  use-storyboard: true
+  groups:
+    - openstack-ci
+- project: openstack-infra/project-config
+  use-storyboard: true
+  groups:
+    - openstack-ci
+- project: openstack/kolla
+  description: Kolla provides production-ready containers and deployment tools for
+    operating OpenStack clouds
+- project: openstack/kolla-ansible
+  description: Ansible deployment of the Kolla containers
+  docimpact-group: kolla
+- project: openstack/kolla-kubernetes
+  description: Kubernetes deployment of the Kolla containers
+  docimpact-group: kolla
+- project: openstack/tempest
+  description: OpenStack Testing (Tempest) of an existing cloud

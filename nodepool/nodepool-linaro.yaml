@@ -1,0 +1,116 @@
+elements-dir: /etc/nodepool/elements
+images-dir: /opt/nodepool_dib
+
+cron:
+  cleanup: '*/1 * * * *'
+  check: '*/15 * * * *'
+
+zmq-publishers:
+  - tcp://localhost:8888
+
+gearman-servers:
+  - host: 127.0.0.1
+
+labels:
+#  - name: debian-jessie
+#    image: debian-jessie
+#    min-ready: 1
+#    providers:
+#      - name: local_01
+  - name: ubuntu-xenial
+    image: ubuntu-xenial
+#    ready-script: configure_mirror.sh
+    min-ready: 2
+    providers:
+      - name: local_01
+
+diskimages:
+  - name: debian-jessie
+    elements:
+      - debian-minimal
+      - vm
+      - simple-init
+      - openstack-repos
+      - nodepool-base
+      - cache-devstack
+      - growroot
+      - infra-package-needs
+    release: jessie
+    env-vars:
+      TMPDIR: /opt/dib_tmp
+      DIB_CHECKSUM: '1'
+      DIB_IMAGE_CACHE: /opt/dib_cache
+      DIB_APT_LOCAL_CACHE: '0'
+      DIB_DISABLE_APT_CLEANUP: '1'
+      DIB_DISTRIBUTION_MIRROR: http://192.168.1.107:8083/debian/
+      DIB_GRUB_TIMEOUT: '0'
+      DIB_BOOTLOADER_DEFAULT_CMDLINE: "console=ttyAMA0"
+      DIB_DEBIAN_USE_DEBOOTSTRAP_CACHE: '1'
+      DIB_DEBOOTSTRAP_CACHE: '1'
+      DIB_CUSTOM_PROJECTS_LIST_URL: file:///home/ubuntu/git/project-config/gerrit/projects-linaro.yaml
+      NODEPOOL_SCRIPTDIR: /etc/nodepool/scripts 
+#        DIB_DEBUG_TRACE: '1'
+  - name: ubuntu-xenial
+    elements:
+      - ubuntu-minimal
+      - vm
+      - simple-init
+      - openstack-repos
+      - nodepool-base
+      - cache-devstack
+      - initialize-urandom
+      - growroot
+      - infra-package-needs
+    release: xenial
+    env-vars:
+      TMPDIR: /opt/dib_tmp
+      DIB_CHECKSUM: '1'
+      DIB_IMAGE_CACHE: /opt/dib_cache
+      DIB_APT_LOCAL_CACHE: '0'
+      DIB_DISABLE_APT_CLEANUP: '1'
+      DIB_GRUB_TIMEOUT: '0'
+      DIB_DEBIAN_COMPONENTS: 'main,universe'
+      DIB_DISTRIBUTION_MIRROR: http://192.168.1.107:8083/ubuntu-ports/
+      DIB_BOOTLOADER_DEFAULT_CMDLINE: "console=ttyAMA0"
+      DIB_CUSTOM_PROJECTS_LIST_URL: file:///home/ubuntu/git/project-config/gerrit/projects-linaro.yaml
+      DIB_DEBIAN_USE_DEBOOTSTRAP_CACHE: '1'
+      DIB_DEBOOTSTRAP_CACHE: '1'
+      NODEPOOL_SCRIPTDIR: /etc/nodepool/scripts 
+#        DIB_DEBUG_TRACE: '1'
+
+providers:
+  - name: local_01
+#TODO: Update the provider username, password, and authurl
+    username: 'openstack-ci'
+    password: 'openstack-ci@linaro'
+    auth-url: 'http://192.168.1.89:5000/v2.0'
+    project-name: 'openstack-ci'
+    max-servers: 2
+    boot-timeout: 1000
+    api-timeout: 60
+    clean-floating-ips: true
+    networks:
+      - net-label: ci-net
+    images:
+      - name: debian-jessie
+        min-ram: 2048
+        diskimage: debian-jessie
+        username: jenkins
+        private-key: '/home/nodepool/.ssh/id_rsa'
+        meta:
+            hw_firmware_type: uefi
+      #      hw_disk_bus: scsi
+      #      hw_scsi_model: virtio-scsi
+      - name: ubuntu-xenial
+        min-ram: 2048
+        diskimage: ubuntu-xenial
+        username: jenkins
+        private-key: /home/nodepool/.ssh/id_rsa
+        config-drive: true
+        meta:
+            hw_firmware_type: uefi
+      #      hw_disk_bus: scsi
+      #      hw_scsi_model: virtio-scsi
+
+targets:
+  - name: jenkins1

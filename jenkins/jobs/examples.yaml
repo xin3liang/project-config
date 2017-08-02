@@ -1,0 +1,14 @@
+- job-template:
+    name: 'noop-check-communication'
+    node: '{node}'
+
+    builders:
+      - shell: |
+          #!/bin/bash -xe
+          echo "Hello world, this is the {vendor} Testing System"
+          echo "project: $ZUUL_PROJECT, branch: $ZUUL_BRANCH"
+      - link-logs
+
+    publishers:
+      - devstack-logs
+      - console-log
